@@ -1,16 +1,28 @@
 using UnityEngine;
+using Unity.Mathematics;
+using Unity.Transforms;
+using Unity.Entities;
+using Unity.Burst;
 
-public class SpawnJob : MonoBehaviour
+public partial struct SpawnJob : IJobEntity
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    // ï¿óÒé¿çsópÇÃEntityCommandBuffer
+    public EntityCommandBuffer.ParallelWriter ECB;
+    void Execute([EntityIndexInChunk] int entityIndex, Entity entity, in SpawnPrefab spawnPrefab)
     {
-        
-    }
+        for (int x = 0; x < 100; x++)
+        {
+            for (int y = 0; y < 100; y++)
+            {
+                for (int z = 0; z < 100; z++)
+                {
+                    Entity newEntity = ECB.Instantiate(entityIndex, spawnPrefab._prefab);
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+                    ECB.SetComponent(entityIndex, newEntity,
+                        LocalTransform.FromPosition(new float3(x, y, z) * 1.5f));
+                }
+            }
+        }
+        ECB.RemoveComponent<SpawnPrefab>(entityIndex, entity);
     }
 }
